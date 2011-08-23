@@ -1,0 +1,37 @@
+*testinator.txt*  Test
+
+Author:  Travis Jeffery <>
+License: Same terms as Vim itself (see |license|)
+
+INTRODUCTION                                    *testinator*
+
+This plugin provides useful functionality for running Ruby tests, including Ruby on Rails projects.
+
+MAPS                               *testinator-mappings*
+
+The following maps all correspond to normal mode commands.
+
+*<leader>rt* |testinator-run-test-method|
+*<leader>rT* |testinator-run-test-file|
+*<leader>rl* |testinator-run-last|
+
+                                                *testinator-run-test-method*
+<leader>rt              Run the single test method your cursor is
+                        currently inside/you are editing.
+
+                                                *testinator-run-test-file*
+<leader>rT              Run the entire test file your cursor is currently
+                        inside/you are editing. 
+
+                                                *testinator-run-last*
+<leader>rl              Run the last test you ran, no matter what, or where you are.
+
+                        I.e. if you last ran a single test (<leader>rt), watched it fail, and wrote the
+                        implementation you can call <leader>rl from your implementation. Same goes if
+                        you last tested the entire file (<leader>rT).
+
+TODO                                            *testinator-todo*
+
+Not load the Rails environment everytime.
+
+ vim:tw=78:et:ft=help:norl:
