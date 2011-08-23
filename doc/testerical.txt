@@ -26,13 +26,20 @@ The following maps all correspond to normal mode commands.
 <leader>rt              Run the single test method your cursor is
                         currently inside/you are editing.
 
+                        Can be remapped with `map mapping <Plug>TestericalRun`
+
                                                 *testerical-run-test-file*
 <leader>rT              Run the entire test file your cursor is currently
                         inside/you are editing. 
 
+                        Can be remapped with `map mapping <Plug>TestericalFileRun`
+
+
                                                 *testerical-run-last*
 <leader>rl              Run the last test you ran, no matter what, or where
                         you are.
+
+                        Can be remapped with `map mapping <Plug>TestericalRunLast`
 
                         I.e. if you last ran a single test (<leader>rt),
                         watched it fail, and wrote the implementation you
