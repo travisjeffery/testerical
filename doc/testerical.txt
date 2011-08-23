@@ -1,0 +1,46 @@
+*testerical.txt*  Testerical
+
+Maintainer:  Travis Jeffery <t@travisjeffery.com>
+Original Author: Jan <jan.h.xie@gmail.com> 
+License: Same terms as Vim itself (see |license|)
+
+INTRODUCTION                                    *testerical*
+
+This plugin provides useful functionality for running Ruby tests, including
+Ruby on Rails projects.
+
+To see the results of your test when not using quickfix, make sure you have a
+separate console tab, screen window, or whatever tailing your log file, which
+by default is `/tmp/vim.log`, you can change this by setting the
+g:testerical_log_file variable.
+
+MAPS                               *testerical-mappings*
+
+The following maps all correspond to normal mode commands.
+
+*<leader>rt* |testerical-run-test-method|
+*<leader>rT* |testerical-run-test-file|
+*<leader>rl* |testerical-run-last|
+
+                                                *testerical-run-test-method*
+<leader>rt              Run the single test method your cursor is
+                        currently inside/you are editing.
+
+                                                *testerical-run-test-file*
+<leader>rT              Run the entire test file your cursor is currently
+                        inside/you are editing. 
+
+                                                *testerical-run-last*
+<leader>rl              Run the last test you ran, no matter what, or where
+                        you are.
+
+                        I.e. if you last ran a single test (<leader>rt),
+                        watched it fail, and wrote the implementation you
+                        can call <leader>rl from your implementation. Same
+                        goes if you last tested the entire file (<leader>rT).
+
+TODO                                            *testerical-todo*
+
+Not load the Rails environment everytime. :S
+
+ vim:tw=78:et:ft=help:norl:

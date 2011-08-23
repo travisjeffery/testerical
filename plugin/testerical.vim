@@ -1,37 +1,37 @@
-
-" Vim plugin for running ruby tests
-" Last Change: Jun 17 2011
-" Maintainer: Jan <jan.h.xie@gmail.com>
-" License: MIT License
-
-if exists("rubytest_loaded")
+if exists("testerical_loaded")
   finish
 endif
-let rubytest_loaded = 1
+let testerical_loaded = 1
 
-if !exists("g:rubytest_in_quickfix")
-  let g:rubytest_in_quickfix = 0
+if !exists("g:testerical_in_quickfix")
+  let g:testerical_in_quickfix = 0
 endif
-if !exists("g:rubytest_spec_drb")
-  let g:rubytest_spec_drb = 0
+if !exists("g:testerical_spec_drb")
+  let g:testerical_spec_drb = 0
 endif
-if !exists("g:rubytest_cmd_test")
-  let g:rubytest_cmd_test = "ruby %p"
+if !exists("g:testerical_cmd_test")
+  let g:testerical_cmd_test = "ruby %p"
 endif
-if !exists("g:rubytest_cmd_testcase")
-  let g:rubytest_cmd_testcase = "ruby %p -n '/%c/'"
+if !exists("g:testerical_cmd_testcase")
+  let g:testerical_cmd_testcase = "ruby %p -n '/%c/'"
 endif
-if !exists("g:rubytest_cmd_spec")
-  let g:rubytest_cmd_spec = "rspec %p"
+if !exists("g:testerical_cmd_spec")
+  let g:testerical_cmd_spec = "rspec %p"
 endif
-if !exists("g:rubytest_cmd_example")
-  let g:rubytest_cmd_example = "rspec %p -l %c"
+if !exists("g:testerical_cmd_example")
+  let g:testerical_cmd_example = "rspec %p -l %c"
 endif
-if !exists("g:rubytest_cmd_feature")
-  let g:rubytest_cmd_feature = "cucumber %p"
+if !exists("g:testerical_cmd_feature")
+  let g:testerical_cmd_feature = "cucumber %p"
 endif
-if !exists("g:rubytest_cmd_story")
-  let g:rubytest_cmd_story = "cucumber %p -n '%c'"
+if !exists("g:testerical_cmd_story")
+  let g:testerical_cmd_story = "cucumber %p -n '%c'"
+endif
+if !exists("g:testerical_log_file")
+  let g:testerical_log_file = "/tmp/vim.log"
+endif
+if !filereadable(g:testerical_log_file)
+  silent execute "!" . g:testerical_log_file | redraw!
 endif
 
 function s:FindCase(patterns)
@@ -57,28 +57,26 @@ function s:EscapeBackSlash(str)
 endfunction
 
 function s:ExecTest(cmd)
-  let g:rubytest_last_cmd = a:cmd
+  let g:testerical_last_cmd = a:cmd
 
-  " if g:rubytest_in_quickfix > 0
-  "   let s:oldefm = &efm
-  "   let &efm = s:efm . s:efm_backtrace . ',' . s:efm_ruby . ',' . s:oldefm . ',%-G%.%#'
+  if g:testerical_in_quickfix > 0
+    let s:oldefm = &efm
+    let &efm = s:efm . s:efm_backtrace . ',' . s:efm_ruby . ',' . s:oldefm . ',%-G%.%#'
 
-  "   cex system(a:cmd)
-  "   cw
+    cex system(a:cmd)
+    cw
 
-  "   let &efm = s:oldefm
-  " else
-  "   exe "!echo '" . a:cmd . "' && " . a:cmd
-  " endif
-  
-  silent execute "!" . a:cmd . " &> /tmp/vim.log &"
+    let &efm = s:oldefm
+  else
+    silent execute "!" . a:cmd . " &> /tmp/vim.log &"
+  endif
 endfunction
 
 function s:RunTest()
   if s:test_scope == 1
-    let cmd = g:rubytest_cmd_testcase
+    let cmd = g:testerical_cmd_testcase
   elseif s:test_scope == 2
-    let cmd = g:rubytest_cmd_test
+    let cmd = g:testerical_cmd_test
   end
 
   let case = s:FindCase(s:test_case_patterns['test'])
@@ -99,12 +97,12 @@ endfunction
 
 function s:RunSpec()
   if s:test_scope == 1
-    let cmd = g:rubytest_cmd_example
+    let cmd = g:testerical_cmd_example
   elseif s:test_scope == 2
-    let cmd = g:rubytest_cmd_spec
+    let cmd = g:testerical_cmd_spec
   endif
 
-  if g:rubytest_spec_drb > 0
+  if g:testerical_spec_drb > 0
     let cmd = cmd . " --drb"
   endif
 
@@ -119,13 +117,13 @@ function s:RunSpec()
 endfunction
 
 function s:RunFeature()
-  let s:old_in_quickfix = g:rubytest_in_quickfix
-  let g:rubytest_in_quickfix = 0
+  let s:old_in_quickfix = g:testerical_in_quickfix
+  let g:testerical_in_quickfix = 0
 
   if s:test_scope == 1
-    let cmd = g:rubytest_cmd_story
+    let cmd = g:testerical_cmd_story
   elseif s:test_scope == 2
-    let cmd = g:rubytest_cmd_feature
+    let cmd = g:testerical_cmd_feature
   endif
 
   let case = s:FindCase(s:test_case_patterns['feature'])
@@ -137,7 +135,7 @@ function s:RunFeature()
     echo 'No story found.'
   endif
 
-  let g:rubytest_in_quickfix = s:old_in_quickfix
+  let g:testerical_in_quickfix = s:old_in_quickfix
 endfunction
 
 let s:test_patterns = {}
@@ -181,17 +179,17 @@ let s:test_case_patterns['feature'] = {'^\s*Scenario:':function('s:GetStoryLine'
 let s:save_cpo = &cpo
 set cpo&vim
 
-if !hasmapto('<Plug>RubyTestRun')
-  map <unique> <Leader>rt <Plug>RubyTestRun
+if !hasmapto('<Plug>TestericalRun')
+  map <unique> <Leader>rt <Plug>TestericalRun
 endif
-if !hasmapto('<Plug>RubyFileRun')
-  map <unique> <Leader>rT <Plug>RubyFileRun
+if !hasmapto('<Plug>TestericalFileRun')
+  map <unique> <Leader>rT <Plug>TestericalFileRun
 endif
-if !hasmapto('<Plug>RubyTestRunLast')
-  map <unique> <Leader>rl <Plug>RubyTestRunLast
+if !hasmapto('<Plug>TestericalRunLast')
+  map <unique> <Leader>rl <Plug>TestericalRunLast
 endif
 
-function s:IsRubyTest()
+function s:IsTesterical()
   for pattern in keys(s:test_patterns)
     if @% =~ pattern
       let s:pattern = pattern
@@ -201,13 +199,13 @@ function s:IsRubyTest()
 endfunction
 
 function s:Run(scope)
-  if !s:IsRubyTest()
+  if !s:IsTesterical()
     echo "This file doesn't contain ruby test."
   else
     " test scope define what to test
     " 1: test case under cursor
     " 2: all tests in file
-    if !s:IsRubyTest()
+    if !s:IsTesterical()
       return
     endif
     let s:test_scope = a:scope
@@ -216,16 +214,16 @@ function s:Run(scope)
 endfunction
 
 function s:RunLast()
-  if !exists("g:rubytest_last_cmd")
+  if !exists("g:testerical_last_cmd")
     echo "No previous test has been run"
   else
-    let r = s:ExecTest(g:rubytest_last_cmd)
+    let r = s:ExecTest(g:testerical_last_cmd)
   end
 endfunction
 
-noremap <unique> <script> <Plug>RubyTestRun <SID>Run
-noremap <unique> <script> <Plug>RubyFileRun <SID>RunFile
-noremap <unique> <script> <Plug>RubyTestRunLast <SID>RunLast
+noremap <unique> <script> <Plug>TestericalRun <SID>Run
+noremap <unique> <script> <Plug>TestericalFileRun <SID>RunFile
+noremap <unique> <script> <Plug>TestericalRunLast <SID>RunLast
 
 noremap <SID>Run :call <SID>Run(1)<CR>:redraw!<cr>
 noremap <SID>RunFile :call <SID>Run(2)<CR>:redraw!<cr>
