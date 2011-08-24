@@ -81,7 +81,7 @@ endfunction
 
 function s:RunTest()
   if s:test_scope == 1
-    let cmd = g:testerical_cmd_testcase
+    let cmd = g:testerical_cmd_testcase . " -v"
   elseif s:test_scope == 2
     let cmd = g:testerical_cmd_test
   end
