@@ -6,6 +6,13 @@ let testerical_loaded = 1
 if !exists("g:testerical_in_quickfix")
   let g:testerical_in_quickfix = 0
 endif
+if !exists("g:testerical_in_spork")
+  let g:testerical_in_spork = 0
+endif
+if g:testerical_in_spork > 0
+  let g:testerical_cmd_testcase = "testdrb -Itest %p -n '/%c/'"
+  let g:testerical_cmd_test = "testdrb -Itest %p"
+endif
 if !exists("g:testerical_spec_drb")
   let g:testerical_spec_drb = 0
 endif
