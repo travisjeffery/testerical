@@ -38,7 +38,7 @@ if !exists("g:testerical_log_file")
   let g:testerical_log_file = "/tmp/vim.log"
 endif
 if !filereadable(g:testerical_log_file)
-  silent execute "!" . g:testerical_log_file | redraw!
+  silent execute "!touch " . g:testerical_log_file | redraw!
 endif
 
 function s:FindCase(patterns)
