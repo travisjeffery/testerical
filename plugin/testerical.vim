@@ -80,21 +80,20 @@ function s:ExecTest(cmd)
       let &shell = '/bin/bash'
     endif
 
-    let &makeprg = 'ruby '.shellescape(expand('%'))
-    " let &errorformat = s:efm . s:efm_backtrace . ',' . s:efm_ruby . ',' . s:oldefm . ',%-G%.%#'
+    let &makeprg = a:cmd
     let &errorformat = '%D(in\ %f),%\\s%#from\ %f:%l:%m,%\\s%#from\ %f:%l:,%\\s#{RAILS_ROOT}/%f:%l:\ %#%m,%\\s%##\ %f:%l:%m,%\\s%##\ %f:%l,%\\s%#[%f:%l:\ %#%m,%\\s%#%f:%l:\ %#%m,%\\s%#%f:%l:,%m\ [%f:%l]:'
 
-    silent lmake!
+    lmake!
     lopen
-    let errors = getloclist(0)
+    " let errors = getloclist(0)
 
-    call setloclist(0, old_loclist)
-    let &makeprg = old_makeprg
-    let &errorformat = old_errorformat
-    let &shellpipe=old_shellpipe
-    let &shell=old_shell
+    " call setloclist(0, old_loclist)
+    " let &makeprg = old_makeprg
+    " let &errorformat = old_errorformat
+    " let &shellpipe=old_shellpipe
+    " let &shell=old_shell
 
-    return errors
+    " return errors
   else
     silent execute "!" . a:cmd . " &> /tmp/vim.log &"
   endif
