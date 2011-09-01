@@ -67,13 +67,32 @@ function s:ExecTest(cmd)
   let g:testerical_last_cmd = a:cmd
 
   if g:testerical_in_quickfix > 0
-    let s:oldefm = &efm
-    let &efm = s:efm . s:efm_backtrace . ',' . s:efm_ruby . ',' . s:oldefm . ',%-G%.%#'
+    let old_loclist = getloclist(0)
+    let old_makeprg = &makeprg
+    let old_shellpipe = &shellpipe
+    let old_shell = &shell
+    let old_errorformat = &errorformat
 
-    cex system(a:cmd)
-    cw
+    if !s:running_windows && (s:uname !~ "FreeBSD")
+      "this is a hack to stop the screen needing to be ':redraw'n when
+      "when :lmake is run. Otherwise the screen flickers annoyingly
+      let &shellpipe='&>'
+      let &shell = '/bin/bash'
+    endif
 
-    let &efm = s:oldefm
+    let &makeprg = 'ruby '.shellescape(expand('%'))
+    let &errorformat = s:efm . s:efm_backtrace . ',' . s:efm_ruby . ',' . s:oldefm . ',%-G%.%#'
+
+    silent lmake!
+    let errors = getloclist(0)
+
+    call setloclist(0, old_loclist)
+    let &makeprg = old_makeprg
+    let &errorformat = old_errorformat
+    let &shellpipe=old_shellpipe
+    let &shell=old_shell
+
+    return errors
   else
     silent execute "!" . a:cmd . " &> /tmp/vim.log &"
   endif
