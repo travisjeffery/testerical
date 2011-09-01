@@ -81,9 +81,11 @@ function s:ExecTest(cmd)
     endif
 
     let &makeprg = 'ruby '.shellescape(expand('%'))
-    let &errorformat = s:efm . s:efm_backtrace . ',' . s:efm_ruby . ',' . s:oldefm . ',%-G%.%#'
+    " let &errorformat = s:efm . s:efm_backtrace . ',' . s:efm_ruby . ',' . s:oldefm . ',%-G%.%#'
+    let &errorformat = '%D(in\ %f),%\\s%#from\ %f:%l:%m,%\\s%#from\ %f:%l:,%\\s#{RAILS_ROOT}/%f:%l:\ %#%m,%\\s%##\ %f:%l:%m,%\\s%##\ %f:%l,%\\s%#[%f:%l:\ %#%m,%\\s%#%f:%l:\ %#%m,%\\s%#%f:%l:,%m\ [%f:%l]:'
 
     silent lmake!
+    lopen
     let errors = getloclist(0)
 
     call setloclist(0, old_loclist)
