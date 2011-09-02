@@ -3,9 +3,9 @@ if exists("g:testerical_loaded")
 endif
 
 noremap <unique> <Plug>(testerical-run-individual) 
-  :<C-u>call testerical#run_indiviual(1)<Return>
+  :<C-u>call testerical#run_with_test_scope(1)<Return>
 noremap <unique> <Plug>(testerical-run-file)
-  :<C-u>call testerical#run_file(2)<Return>
+  :<C-u>call testerical#run_with_test_scope(2)<Return>
 noremap <unique> <Plug>(testerical-run-last) 
   :<C-u>call testerical#run_last()<Return>
 

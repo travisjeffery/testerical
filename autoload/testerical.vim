@@ -1,7 +1,4 @@
-let s:indivual_test_scope = 1
-let s:file_test_scope = 2
-
-function s:Run(scope)
+function! s:testerical#run_with_test_scope(scope)
   if !s:is_testable()
     echo "This file doesn't contain ruby test(s)."
   else
@@ -16,14 +13,11 @@ function s:Run(scope)
   endif
 endfunction
 
-function! testerical#run_file()
-  testerical#run_with_scope()
-
 function! testerical#run_last()
   if !exists("g:testerical_last_cmd")
     echo "No previous test has been run"
   else
-    let r = s:ExecTest(g:testerical_last_cmd)
+    let r = s:execute(g:testerical_last_cmd)
   end
 endfunction
 
@@ -67,7 +61,7 @@ function! s:load_settings()
   endif
 endfunction
 
-function s:test_case_for_pattern(patterns)
+function! s:test_case_for_pattern(patterns)
   let ln = a:firstline
   while ln > 0
     let line = getline(ln)
@@ -85,12 +79,14 @@ function s:test_case_for_pattern(patterns)
   return 'false'
 endfunction
 
-function s:EscapeBackSlash(str)
+function! s:escape_backslash(str)
   return substitute(a:str, '\', '\\\\', 'g')
 endfunction
 
-function s:ExecTest(cmd)
+function! s:execute(cmd)
   let g:testerical_last_cmd = a:cmd
+  
+  call s:load_settings()
 
   let s:old_errorformat = &errorformat
   let s:old_errorfile = &errorfile
@@ -117,7 +113,7 @@ function s:ExecTest(cmd)
   " let &errorfile = s:old_errorfile
 endfunction
 
-function s:RunTest()
+function! s:run_test()
   if s:test_scope == 1
     let cmd = g:testerical_cmd_testcase . " -v"
   elseif s:test_scope == 2
@@ -128,19 +124,19 @@ function s:RunTest()
   if s:test_scope == 2 || case != 'false'
     let case = substitute(case, "'\\|\"", '.', 'g')
     let cmd = substitute(cmd, '%c', case, '')
-    let cmd = substitute(cmd, '%p', s:EscapeBackSlash(@%), '')
+    let cmd = substitute(cmd, '%p', s:escape_backslash(@%), '')
 
     if @% =~ '^test'
       let cmd = substitute(cmd, '^ruby ', 'ruby -Itest -rtest_helper ', '')
     endif
 
-    call s:ExecTest(cmd)
+    call s:execute(cmd)
   else
     echo 'No test case found.'
   endif
 endfunction
 
-function s:RunSpec()
+function! s:RunSpec()
   if s:test_scope == 1
     let cmd = g:testerical_cmd_example
   elseif s:test_scope == 2
@@ -154,14 +150,14 @@ function s:RunSpec()
   let case = s:test_case_for_pattern(s:test_case_patterns['spec'])
   if s:test_scope == 2 || case != 'false'
     let cmd = substitute(cmd, '%c', case, '')
-    let cmd = substitute(cmd, '%p', s:EscapeBackSlash(@%), '')
-    call s:ExecTest(cmd)
+    let cmd = substitute(cmd, '%p', s:escape_backslash(@%), '')
+    call s:execute(cmd)
   else
     echo 'No spec found.'
   endif
 endfunction
 
-function s:RunFeature()
+function! s:RunFeature()
   let s:old_in_quickfix = g:testerical_in_quickfix
   let g:testerical_in_quickfix = 0
 
@@ -174,8 +170,8 @@ function s:RunFeature()
   let case = s:test_case_for_pattern(s:test_case_patterns['feature'])
   if s:test_scope == 2 || case != 'false'
     let cmd = substitute(cmd, '%c', case, '')
-    let cmd = substitute(cmd, '%p', s:EscapeBackSlash(@%), '')
-    call s:ExecTest(cmd)
+    let cmd = substitute(cmd, '%p', s:escape_backslash(@%), '')
+    call s:execute(cmd)
   else
     echo 'No story found.'
   endif
@@ -184,44 +180,44 @@ function s:RunFeature()
 endfunction
 
 let s:test_patterns = {}
-let s:test_patterns['test'] = function('s:RunTest')
+let s:test_patterns['test'] = function('s:run_test')
 let s:test_patterns['spec'] = function('s:RunSpec')
 let s:test_patterns['\.feature$'] = function('s:RunFeature')
 
-function s:GetTestCaseName1(str)
+function! s:test_case_with_index_1(str)
   return split(a:str)[1]
 endfunction
 
-function s:GetTestCaseName2(str)
+function! s:test_case_with_index_2(str)
   return "test_" . join(split(split(a:str, '"')[1]), '_')
 endfunction
 
-function s:GetTestCaseName3(str)
+function! s:test_case_with_index_3(str)
   return split(a:str, '"')[1]
 endfunction
 
-function s:GetTestCaseName4(str)
+function! s:test_case_with_index_4(str)
   return "test_" . join(split(split(a:str, "'")[1]), '_')
 endfunction
 
-function s:GetTestCaseName5(str)
+function! s:test_case_with_index_5(str)
   return split(a:str, "'")[1]
 endfunction
 
-function s:GetSpecLine(str)
+function! s:GetSpecLine(str)
   return a:str
 endfunction
 
-function s:GetStoryLine(str)
+function! s:GetStoryLine(str)
   return join(split(split(a:str, "Scenario:")[1]))
 endfunction
 
 let s:test_case_patterns = {}
-let s:test_case_patterns['test'] = {'^\s*def test':function('s:GetTestCaseName1'), '^\s*test \s*"':function('s:GetTestCaseName2'), "^\\s*test \\s*'":function('s:GetTestCaseName4'), '^\s*should \s*"':function('s:GetTestCaseName3'), "^\\s*should \\s*'":function('s:GetTestCaseName5')}
+let s:test_case_patterns['test'] = {'^\s*def test':function('s:test_case_with_index_1'), '^\s*test \s*"':function('s:test_case_with_index_2'), "^\\s*test \\s*'":function('s:test_case_with_index_4'), '^\s*should \s*"':function('s:test_case_with_index_3'), "^\\s*should \\s*'":function('s:test_case_with_index_5')}
 let s:test_case_patterns['spec'] = {'^\s*\(it\|example\|describe\|context\) \s*':function('s:GetSpecLine')}
 let s:test_case_patterns['feature'] = {'^\s*Scenario:':function('s:GetStoryLine')}
 
-function s:is_testable()
+function! s:is_testable()
   for pattern in keys(s:test_patterns)
     if @% =~ pattern
       let s:pattern = pattern
