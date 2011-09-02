@@ -2,12 +2,9 @@ if exists("g:testerical_loaded")
   finish
 endif
 
-noremap <unique> <Plug>(testerical-run-individual) 
-  :<C-u>call testerical#run_with_test_scope(1)<Return>
-noremap <unique> <Plug>(testerical-run-file)
-  :<C-u>call testerical#run_with_test_scope(2)<Return>
-noremap <unique> <Plug>(testerical-run-last) 
-  :<C-u>call testerical#run_last()<Return>
+noremap <silent> <Plug>(testerical-run-individual) :<C-u>call testerical#run_with_test_scope(1)<Return>
+noremap <silent> <Plug>(testerical-run-file) :<C-u>call testerical#run_with_test_scope(2)<Return>
+noremap <silent> <Plug>(testerical-run-last) :<C-u>call testerical#run_last()<Return>
 
 if !hasmapto('<Plug>(testerical-run-individual)')
   map <unique> <Leader>rt <Plug>(testerical-run-individual)
