@@ -18,7 +18,7 @@ function! testerical#run_last()
   if !exists("g:testerical_last_cmd")
     echo "No previous test has been run"
   else
-    s:execute(g:testerical_last_cmd)
+    s:execute_and_redirect(g:testerical_last_cmd)
   end
 endfunction
 
@@ -44,7 +44,7 @@ function! s:escape_backslash(str)
   return substitute(a:str, '\', '\\\\', 'g')
 endfunction
 
-function! s:execute(cmd)
+function! s:execute_and_redirect(cmd)
   let g:testerical_last_cmd = a:cmd
 
   let s:old_errorformat = &errorformat
@@ -53,9 +53,9 @@ function! s:execute(cmd)
   let &errorfile = g:testerical_log_file
 
   if g:testerical_in_quickfix > 0
-    execute "!" . a:cmd . " | tee " . g:testerical_log_file  
+    silent execute "!" . a:cmd . " | tee " . g:testerical_log_file  
   else
-    execute "!" . a:cmd . " &> " . g:testerical_log_file . " &"
+    silent execute "!" . a:cmd . " &> " . g:testerical_log_file . " &"
   endif
 
   let s:relativize_absolute_test_paths = '!sed -i -e "s/^\(\s*\)\//\1/g" ' . g:testerical_log_file
@@ -74,6 +74,7 @@ endfunction
 
 function! s:run_test()
   call s:load_settings()
+
   if s:test_scope == 1
     let cmd = g:testerical_cmd_testcase . " -v"
   elseif s:test_scope == 2
@@ -90,7 +91,7 @@ function! s:run_test()
       let cmd = substitute(cmd, '^ruby ', 'ruby -Itest -rtest_helper ', '')
     endif
 
-    call s:execute(cmd)
+    call s:execute_and_redirect(cmd)
   else
     echo 'No test case found.'
   endif
@@ -111,7 +112,7 @@ function! s:run_spec()
   if s:test_scope == 2 || case != 'false'
     let cmd = substitute(cmd, '%c', case, '')
     let cmd = substitute(cmd, '%p', s:escape_backslash(@%), '')
-    call s:execute(cmd)
+    call s:execute_and_redirect(cmd)
   else
     echo 'No spec found.'
   endif
@@ -131,7 +132,7 @@ function! s:run_feature()
   if s:test_scope == 2 || case != 'false'
     let cmd = substitute(cmd, '%c', case, '')
     let cmd = substitute(cmd, '%p', s:escape_backslash(@%), '')
-    call s:execute(cmd)
+    call s:execute_and_redirect(cmd)
   else
     echo 'No story found.'
   endif
