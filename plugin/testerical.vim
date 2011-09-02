@@ -66,17 +66,29 @@ endfunction
 function s:ExecTest(cmd)
   let g:testerical_last_cmd = a:cmd
 
+  let s:old_errorformat = &errorformat
+  let s:old_errorfile = &errorfile
+  let &errorformat = s:errorformat . s:errorformat_backtrace . ',' . s:errorformat_ruby . ',' . s:old_errorformat . ',%-G%.%#'
+  let &errorfile = g:testerical_log_file
+
   if g:testerical_in_quickfix > 0
-    let s:oldefm = &efm
-    let &efm = s:efm . s:efm_backtrace . ',' . s:efm_ruby . ',' . s:oldefm . ',%-G%.%#'
-
-    cex system(a:cmd)
-    cw
-
-    let &efm = s:oldefm
+    execute "!" . a:cmd . " | tee " . g:testerical_log_file  
   else
-    silent execute "!" . a:cmd . " &> /tmp/vim.log &"
+    execute "!" . a:cmd . " &> " . g:testerical_log_file . " &"
   endif
+
+  let s:relativize_absolute_test_paths = '!sed -i -e "s/^\(\s*\)\//\1/g" ' . g:testerical_log_file
+  silent execute s:relativize_absolute_test_paths
+
+  redraw!
+
+  if g:testerical_in_quickfix > 0
+    cfile
+    cw
+  endif
+
+  " let &errorformat = s:old_errorformat
+  " let &errorfile = s:old_errorfile
 endfunction
 
 function s:RunTest()
@@ -236,29 +248,29 @@ noremap <SID>Run :call <SID>Run(1)<CR>:redraw!<cr>
 noremap <SID>RunFile :call <SID>Run(2)<CR>:redraw!<cr>
 noremap <SID>RunLast :call <SID>RunLast()<CR>:redraw!<cr>
 
-let s:efm='%A%\\d%\\+)%.%#,'
+let s:errorformat='%A%\\d%\\+)%.%#,'
 
 " below errorformats are copied from rails.vim
 " Current directory
-let s:efm=s:efm . '%D(in\ %f),'
+let s:errorformat=s:errorformat . '%D(in\ %f),'
 " Failure and Error headers, start a multiline message
-let s:efm=s:efm
+let s:errorformat=s:errorformat
       \.'%A\ %\\+%\\d%\\+)\ Failure:,'
       \.'%A\ %\\+%\\d%\\+)\ Error:,'
       \.'%+A'."'".'%.%#'."'".'\ FAILED,'
 " Exclusions
-let s:efm=s:efm
+let s:errorformat=s:errorformat
       \.'%C%.%#(eval)%.%#,'
       \.'%C-e:%.%#,'
       \.'%C%.%#/lib/gems/%\\d.%\\d/gems/%.%#,'
       \.'%C%.%#/lib/ruby/%\\d.%\\d/%.%#,'
       \.'%C%.%#/vendor/rails/%.%#,'
 " Specific to template errors
-let s:efm=s:efm
+let s:errorformat=s:errorformat
       \.'%C\ %\\+On\ line\ #%l\ of\ %f,'
       \.'%CActionView::TemplateError:\ compile\ error,'
 " stack backtrace is in brackets. if multiple lines, it starts on a new line.
-let s:efm=s:efm
+let s:errorformat=s:errorformat
       \.'%Ctest_%.%#(%.%#):%#,'
       \.'%C%.%#\ [%f:%l]:,'
       \.'%C\ \ \ \ [%f:%l:%.%#,'
@@ -266,30 +278,30 @@ let s:efm=s:efm
       \.'%C\ \ \ \ \ %f:%l:%.%#]:,'
       \.'%C\ \ \ \ \ %f:%l:%.%#,'
 " Catch all
-let s:efm=s:efm
+let s:errorformat=s:errorformat
       \.'%Z%f:%l:\ %#%m,'
       \.'%Z%f:%l:,'
       \.'%C%m,'
 " Syntax errors in the test itself
-let s:efm=s:efm
+let s:errorformat=s:errorformat
       \.'%.%#.rb:%\\d%\\+:in\ `load'."'".':\ %f:%l:\ syntax\ error\\\, %m,'
       \.'%.%#.rb:%\\d%\\+:in\ `load'."'".':\ %f:%l:\ %m,'
 " And required files
-let s:efm=s:efm
+let s:errorformat=s:errorformat
       \.'%.%#:in\ `require'."'".':in\ `require'."'".':\ %f:%l:\ syntax\ error\\\, %m,'
       \.'%.%#:in\ `require'."'".':in\ `require'."'".':\ %f:%l:\ %m,'
 " Exclusions
-let s:efm=s:efm
+let s:errorformat=s:errorformat
       \.'%-G%.%#/lib/gems/%\\d.%\\d/gems/%.%#,'
       \.'%-G%.%#/lib/ruby/%\\d.%\\d/%.%#,'
       \.'%-G%.%#/vendor/rails/%.%#,'
       \.'%-G%.%#%\\d%\\d:%\\d%\\d:%\\d%\\d%.%#,'
 " Final catch all for one line errors
-let s:efm=s:efm
+let s:errorformat=s:errorformat
       \.'%-G%\\s%#from\ %.%#,'
       \.'%f:%l:\ %#%m,'
 
-let s:efm_backtrace='%D(in\ %f),'
+let s:errorformat_backtrace='%D(in\ %f),'
       \.'%\\s%#from\ %f:%l:%m,'
       \.'%\\s%#from\ %f:%l:,'
       \.'%\\s#{RAILS_ROOT}/%f:%l:\ %#%m,'
@@ -298,7 +310,7 @@ let s:efm_backtrace='%D(in\ %f),'
       \.'%\\s%#%f:%l:,'
       \.'%m\ [%f:%l]:'
 
-let s:efm_ruby='\%-E-e:%.%#,\%+E%f:%l:\ parse\ error,%W%f:%l:\ warning:\ %m,%E%f:%l:in\ %*[^:]:\ %m,%E%f:%l:\ %m,%-C%\tfrom\ %f:%l:in\ %.%#,%-Z%\tfrom\ %f:%l,%-Z%p^'
+let s:errorformat_ruby='\%-E-e:%.%#,\%+E%f:%l:\ parse\ error,%W%f:%l:\ warning:\ %m,%E%f:%l:in\ %*[^:]:\ %m,%E%f:%l:\ %m,%-C%\tfrom\ %f:%l:in\ %.%#,%-Z%\tfrom\ %f:%l,%-Z%p^'
 
 let &cpo = s:save_cpo
 
