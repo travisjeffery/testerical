@@ -1,3 +1,32 @@
+let s:indivual_test_scope = 1
+let s:file_test_scope = 2
+
+function s:Run(scope)
+  if !s:is_testable()
+    echo "This file doesn't contain ruby test(s)."
+  else
+    " test scope define what to test
+    " 1: test case under cursor
+    " 2: all tests in file
+    if !s:is_testable()
+      return
+    endif
+    let s:test_scope = a:scope
+    call s:test_patterns[s:pattern]()
+  endif
+endfunction
+
+function! testerical#run_file()
+  testerical#run_with_scope()
+
+function! testerical#run_last()
+  if !exists("g:testerical_last_cmd")
+    echo "No previous test has been run"
+  else
+    let r = s:ExecTest(g:testerical_last_cmd)
+  end
+endfunction
+
 function! s:load_settings()
   if !exists("g:testerical_in_quickfix")
     let g:testerical_in_quickfix = 0
@@ -38,7 +67,7 @@ function! s:load_settings()
   endif
 endfunction
 
-function s:FindCase(patterns)
+function s:test_case_for_pattern(patterns)
   let ln = a:firstline
   while ln > 0
     let line = getline(ln)
@@ -95,7 +124,7 @@ function s:RunTest()
     let cmd = g:testerical_cmd_test
   end
 
-  let case = s:FindCase(s:test_case_patterns['test'])
+  let case = s:test_case_for_pattern(s:test_case_patterns['test'])
   if s:test_scope == 2 || case != 'false'
     let case = substitute(case, "'\\|\"", '.', 'g')
     let cmd = substitute(cmd, '%c', case, '')
@@ -122,7 +151,7 @@ function s:RunSpec()
     let cmd = cmd . " --drb"
   endif
 
-  let case = s:FindCase(s:test_case_patterns['spec'])
+  let case = s:test_case_for_pattern(s:test_case_patterns['spec'])
   if s:test_scope == 2 || case != 'false'
     let cmd = substitute(cmd, '%c', case, '')
     let cmd = substitute(cmd, '%p', s:EscapeBackSlash(@%), '')
@@ -142,7 +171,7 @@ function s:RunFeature()
     let cmd = g:testerical_cmd_feature
   endif
 
-  let case = s:FindCase(s:test_case_patterns['feature'])
+  let case = s:test_case_for_pattern(s:test_case_patterns['feature'])
   if s:test_scope == 2 || case != 'false'
     let cmd = substitute(cmd, '%c', case, '')
     let cmd = substitute(cmd, '%p', s:EscapeBackSlash(@%), '')
@@ -192,20 +221,7 @@ let s:test_case_patterns['test'] = {'^\s*def test':function('s:GetTestCaseName1'
 let s:test_case_patterns['spec'] = {'^\s*\(it\|example\|describe\|context\) \s*':function('s:GetSpecLine')}
 let s:test_case_patterns['feature'] = {'^\s*Scenario:':function('s:GetStoryLine')}
 
-let s:save_cpo = &cpo
-set cpo&vim
-
-if !hasmapto('<Plug>TestericalRun')
-  map <unique> <Leader>rt <Plug>TestericalRun
-endif
-if !hasmapto('<Plug>TestericalFileRun')
-  map <unique> <Leader>rT <Plug>TestericalFileRun
-endif
-if !hasmapto('<Plug>TestericalRunLast')
-  map <unique> <Leader>rl <Plug>TestericalRunLast
-endif
-
-function s:IsTesterical()
+function s:is_testable()
   for pattern in keys(s:test_patterns)
     if @% =~ pattern
       let s:pattern = pattern
@@ -213,37 +229,6 @@ function s:IsTesterical()
     endif
   endfor
 endfunction
-
-function s:Run(scope)
-  if !s:IsTesterical()
-    echo "This file doesn't contain ruby test."
-  else
-    " test scope define what to test
-    " 1: test case under cursor
-    " 2: all tests in file
-    if !s:IsTesterical()
-      return
-    endif
-    let s:test_scope = a:scope
-    call s:test_patterns[s:pattern]()
-  endif
-endfunction
-
-function s:RunLast()
-  if !exists("g:testerical_last_cmd")
-    echo "No previous test has been run"
-  else
-    let r = s:ExecTest(g:testerical_last_cmd)
-  end
-endfunction
-
-noremap <unique> <script> <Plug>TestericalRun <SID>Run
-noremap <unique> <script> <Plug>TestericalFileRun <SID>RunFile
-noremap <unique> <script> <Plug>TestericalRunLast <SID>RunLast
-
-noremap <SID>Run :call <SID>Run(1)<CR>:redraw!<cr>
-noremap <SID>RunFile :call <SID>Run(2)<CR>:redraw!<cr>
-noremap <SID>RunLast :call <SID>RunLast()<CR>:redraw!<cr>
 
 let s:errorformat='%A%\\d%\\+)%.%#,'
 
