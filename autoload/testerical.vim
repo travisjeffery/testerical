@@ -53,13 +53,10 @@ function! s:execute_and_redirect(cmd)
   let &errorfile = g:testerical_log_file
 
   if g:testerical_in_quickfix > 0
-    silent execute "!" . a:cmd . " | tee " . g:testerical_log_file  
+    silent execute '!' . a:cmd . ' | sed -e "s/^\(\s*\)\//\1/g" | tee ' . g:testerical_log_file  
   else
-    silent execute "!" . a:cmd . " &> " . g:testerical_log_file . " &"
+    silent execute '!' . a:cmd . ' | sed -e "s/^\(\s*\)\//\1/g"  &> ' . g:testerical_log_file . ' &'
   endif
-
-  let s:relativize_absolute_test_paths = '!sed -i -e "s/^\(\s*\)\//\1/g" ' . g:testerical_log_file
-  silent execute s:relativize_absolute_test_paths
 
   redraw!
 
