@@ -18,7 +18,7 @@ function! testerical#run_last()
   if !exists("g:testerical_last_cmd")
     echo "No previous test has been run"
   else
-    s:execute_and_redirect(g:testerical_last_cmd)
+    call s:execute_and_redirect(g:testerical_last_cmd)
   end
 endfunction
 
@@ -222,7 +222,7 @@ function! s:load_settings()
   if !exists("g:testerical_log_file")
     let g:testerical_log_file = "/tmp/vim.log"
   endif
-  if !filereadable(g:testerical_log_file)
+  if !filewritable(g:testerical_log_file)
     silent execute "!touch " . g:testerical_log_file | redraw!
   endif
 endfunction
