@@ -16,4 +16,6 @@ if !hasmapto('<Plug>(testerical-run-last)')
   map <unique> <Leader>rl <Plug>(testerical-run-last)
 endif
 
+call testerical#load_settings()
+
 let g:testerical_loaded = 1

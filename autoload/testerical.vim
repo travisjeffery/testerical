@@ -1,6 +1,4 @@
 function! testerical#run_with_test_scope(scope)
-  call s:load_settings()
-
   if !s:is_testable()
     echo "This file doesn't contain ruby test(s)."
   else
@@ -14,7 +12,8 @@ function! testerical#run_with_test_scope(scope)
 endfunction
 
 function! testerical#run_last()
-  call s:load_settings()
+  call testerical#load_settings()
+
   if !exists("g:testerical_last_cmd")
     echo "No previous test has been run"
   else
@@ -65,7 +64,7 @@ function! s:execute_and_redirect(cmd)
 endfunction
 
 function! s:run_test()
-  call s:load_settings()
+  call testerical#load_settings()
 
   if s:test_scope == 1
     let cmd = g:testerical_cmd_testcase . " -v"
@@ -179,7 +178,7 @@ function! s:is_testable()
   endfor
 endfunction
 
-function! s:load_settings()
+function! testerical#load_settings()
   if !exists("g:testerical_in_quickfix")
     let g:testerical_in_quickfix = 0
   endif
