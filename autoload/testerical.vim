@@ -47,10 +47,8 @@ endfunction
 function! s:execute_and_redirect(cmd)
   let g:testerical_last_cmd = a:cmd
 
-  let s:old_errorformat = &errorformat
-  let s:old_errorfile = &errorfile
-  let &errorformat = s:errorformat . s:errorformat_backtrace . ',' . s:errorformat_ruby . ',' . s:old_errorformat . ',%-G%.%#'
-  let &errorfile = g:testerical_log_file
+  let &l:errorformat = s:my_errorformat . s:errorformat_backtrace . ',' . s:errorformat_ruby . ',' . &errorformat . ',%-G%.%#'
+  let &l:errorfile = g:testerical_log_file
 
   if g:testerical_in_quickfix > 0
     silent execute '!' . a:cmd . ' | sed -e "s/^\(\s*\)\//\1/g" | tee ' . g:testerical_log_file  
@@ -64,9 +62,6 @@ function! s:execute_and_redirect(cmd)
     cfile
     cw
   endif
-
-  " let &errorformat = s:old_errorformat
-  " let &errorfile = s:old_errorfile
 endfunction
 
 function! s:run_test()
@@ -224,19 +219,19 @@ function! s:load_settings()
   endif
 endfunction
 
-let s:errorformat='%A%\\d%\\+)%.%#,'
+let s:my_errorformat='%A%\\d%\\+)%.%#,'
 
 " current directory
-let s:errorformat=s:errorformat . '%D(in\ %f),'
+let s:my_errorformat=s:my_errorformat . '%D(in\ %f),'
 
 " failure and error headers, start a multiline message
-let s:errorformat=s:errorformat
+let s:my_errorformat=s:my_errorformat
       \.'%A\ %\\+%\\d%\\+)\ Failure:,'
       \.'%A\ %\\+%\\d%\\+)\ Error:,'
       \.'%+A'."'".'%.%#'."'".'\ FAILED,'
 
 " exclusions
-let s:errorformat=s:errorformat
+let s:my_errorformat=s:my_errorformat
       \.'%C%.%#(eval)%.%#,'
       \.'%C-e:%.%#,'
       \.'%C%.%#/lib/gems/%\\d.%\\d/gems/%.%#,'
@@ -244,12 +239,12 @@ let s:errorformat=s:errorformat
       \.'%C%.%#/vendor/rails/%.%#,'
 
 " specific to template errors
-let s:errorformat=s:errorformat
+let s:my_errorformat=s:my_errorformat
       \.'%C\ %\\+On\ line\ #%l\ of\ %f,'
       \.'%CActionView::TemplateError:\ compile\ error,'
 
 " stack backtrace is in brackets. if multiple lines, it starts on a new line.
-let s:errorformat=s:errorformat
+let s:my_errorformat=s:my_errorformat
       \.'%Ctest_%.%#(%.%#):%#,'
       \.'%C%.%#\ [%f:%l]:,'
       \.'%C\ \ \ \ [%f:%l:%.%#,'
@@ -258,30 +253,30 @@ let s:errorformat=s:errorformat
       \.'%C\ \ \ \ \ %f:%l:%.%#,'
 
 " catch all
-let s:errorformat=s:errorformat
+let s:my_errorformat=s:my_errorformat
       \.'%Z%f:%l:\ %#%m,'
       \.'%Z%f:%l:,'
       \.'%C%m,'
 
 " syntax errors in the test itself
-let s:errorformat=s:errorformat
+let s:my_errorformat=s:my_errorformat
       \.'%.%#.rb:%\\d%\\+:in\ `load'."'".':\ %f:%l:\ syntax\ error\\\, %m,'
       \.'%.%#.rb:%\\d%\\+:in\ `load'."'".':\ %f:%l:\ %m,'
 
 " and required files
-let s:errorformat=s:errorformat
+let s:my_errorformat=s:my_errorformat
       \.'%.%#:in\ `require'."'".':in\ `require'."'".':\ %f:%l:\ syntax\ error\\\, %m,'
       \.'%.%#:in\ `require'."'".':in\ `require'."'".':\ %f:%l:\ %m,'
 
 " exclusions
-let s:errorformat=s:errorformat
+let s:my_errorformat=s:my_errorformat
       \.'%-G%.%#/lib/gems/%\\d.%\\d/gems/%.%#,'
       \.'%-G%.%#/lib/ruby/%\\d.%\\d/%.%#,'
       \.'%-G%.%#/vendor/rails/%.%#,'
       \.'%-G%.%#%\\d%\\d:%\\d%\\d:%\\d%\\d%.%#,'
 
 " final catch all for one line errors
-let s:errorformat=s:errorformat
+let s:my_errorformat=s:my_errorformat
       \.'%-G%\\s%#from\ %.%#,'
       \.'%f:%l:\ %#%m,'
 
