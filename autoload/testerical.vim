@@ -50,9 +50,9 @@ function! s:execute_and_redirect(cmd)
   let &l:errorfile = g:testerical_log_file
 
   if g:testerical_in_quickfix > 0
-    silent execute '!' . a:cmd . ' | sed -e "s/^\(\s*\)\//\1/g" | tee ' . g:testerical_log_file  
+    silent execute '!' . a:cmd . ' | sed -e "s/^\(\s*\)\[\?\//\1/g"  | tee ' . g:testerical_log_file  
   else
-    silent execute '!' . a:cmd . ' | sed -e "s/^\(\s*\)\//\1/g"  &> ' . g:testerical_log_file . ' &'
+    silent execute '!' . a:cmd . ' | sed -e "s/^\(\s*\)\[\?\//\1/g" &> ' . g:testerical_log_file . ' &'
   endif
 
   redraw!
@@ -186,8 +186,10 @@ function! testerical#load_settings()
     let g:testerical_in_spork = 0
   endif
   if g:testerical_in_spork > 0
-    let g:testerical_cmd_testcase = "testdrb -Itest %p -n '/%c/'"
-    let g:testerical_cmd_test = "testdrb -Itest %p"
+    if !exists("g:testerical_cmd_test")
+      let g:testerical_cmd_testcase = "testdrb -Itest %p -n '/%c/'"
+      let g:testerical_cmd_test = "testdrb -Itest %p"
+    endif
   endif
   if !exists("g:testerical_spec_drb")
     let g:testerical_spec_drb = 0
