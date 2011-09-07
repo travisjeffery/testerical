@@ -43,6 +43,63 @@ function! s:escape_backslash(str)
   return substitute(a:str, '\', '\\\\', 'g')
 endfunction
 
+
+if has('win32')
+  " basic async search
+  command! -bar -complete=file -nargs=+ GrepAsync call AsyncGrep('',<f-args>)
+  " same, but recursive
+  command! -bar -complete=file -nargs=+ RGrepAsync call AsyncGrep('/S',<f-args>)
+
+  function! AsyncGrep(flags, pattern, ...)
+    " find a place to store the results to allow Vim to read them in
+    let grep_temp_file = tempname()
+
+    " get the file list into a format findstr can read, or search all files if
+    " no file list was passed in
+    if a:0 > 0
+      let grep_file_list = substitute(join(a:000, '" "'),'/','\','g')
+    else
+      let grep_file_list = '*'
+    endif
+
+    " Need to escape '!' characters according to :help :!
+    let flags = escape(a:flags, '!')
+    let pattern = escape(a:pattern, '!')
+    let grep_file_list = escape(grep_file_list, '!')
+
+    call writefile(['Grep results for "'.pattern.'" in "'.grep_file_list.'"'], grep_temp_file)
+
+    " execute the search in a new process and redirect to a temporary file, then
+    " send the result file back to this Vim instance
+    exec 'silent !start /min cmd /c "echo Searching for "'.pattern.'" in "'.grep_file_list.'", do not close this window... & '.
+          \ 'findstr /R /N '.flags.' "'.pattern.'" "'.grep_file_list.'" >> "'.grep_temp_file.'" & '.
+          \ 'vim --servername '.v:servername.' --remote-expr "ParseAsyncGrep('."'".grep_temp_file."')".'""'
+  endfunction
+
+  function! ParseAsyncGrep(tempfile)
+    " set up the errorformat so Vim can parse the output
+    let oldefm = &errorformat
+    let &errorformat = &grepformat
+
+    " parse the results into the quickfix window, but don't jump to the first
+    " search hit
+    exec 'cgetfile '.a:tempfile
+
+    " restore the previous state
+    let &errorformat = oldefm
+    call delete(a:tempfile)
+
+    " the echomsg is mostly debug, but could be used instead of the botright
+    " copen to alert the user without interfering
+    echomsg "got grep results file ".a:tempfile
+
+    " open the quickfix window but don't interfere with the user; jump back to
+    " the current window after opening the quickfix window
+    botright copen
+    wincmd p
+    redraw
+  endfunction
+
 function! s:execute_and_redirect(cmd)
   let g:testerical_last_cmd = a:cmd
 
@@ -50,9 +107,11 @@ function! s:execute_and_redirect(cmd)
   let &l:errorfile = g:testerical_log_file
 
   if g:testerical_in_quickfix > 0
-    silent execute '!' . a:cmd . ' | sed -e "s/^\(\s*\)\[\?\//\1/g"  | tee ' . g:testerical_log_file  
+    let &l:makeprg = a:cmd 
+    silent execute 'silent !' . a:cmd . ' | sed -e "s/^\(\s*\)\[\?\//\1/g"  | tee > ' . g:testerical_log_file
   else
-    silent execute '!' . a:cmd . ' | sed -e "s/^\(\s*\)\[\?\//\1/g" &> ' . g:testerical_log_file . ' &'
+    let &l:makeprg = a:cmd 
+    silent execute 'silent !' . a:cmd . ' | sed -e "s/^\(\s*\)\[\?\//\1/g" > ' . g:testerical_log_file . ' &'
   endif
 
   redraw!
