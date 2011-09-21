@@ -49,11 +49,12 @@ function! s:execute_and_redirect(cmd)
   let &l:errorformat = s:my_errorformat . s:errorformat_backtrace . ',' . s:errorformat_ruby . ',' . &errorformat . ',%-G%.%#'
   let &l:errorfile = g:testerical_log_file
 
+
   if g:testerical_in_quickfix > 0
     silent execute '!' . a:cmd . ' | sed -e "s/^\(\s*\)\[\?\//\1/g"  | tee ' . g:testerical_log_file  
   else
-    echo '!' . a:cmd . ' | sed -e "s/^\(\s*\)\[\?\//\1/g" &> ' . g:testerical_log_file . ' &'
-    silent execute '!' . a:cmd . ' &> ' . g:testerical_log_file . ' &'
+    let spacer = 'echo "\n\n\n\n\n - testerical - \n\n\n\n\n" > ' . g:testerical_log_file . ' && '
+    silent execute '!' . spacer . a:cmd . ' &> ' . g:testerical_log_file . ' &'
   endif
 
   if !has("gui")
