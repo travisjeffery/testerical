@@ -55,7 +55,9 @@ function! s:execute_and_redirect(cmd)
     silent execute '!' . a:cmd . ' | sed -e "s/^\(\s*\)\[\?\//\1/g" &> ' . g:testerical_log_file . ' &'
   endif
 
-  redraw!
+  if !has("gui")
+    redraw!
+  end
 
   if g:testerical_in_quickfix > 0
     cfile
